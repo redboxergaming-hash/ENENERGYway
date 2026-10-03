@@ -1,0 +1,43 @@
+[gd_scene load_steps=11 format=3]
+[ext_resource type="Script" path="res://machines/mixer_machine.gd" id="1"]
+[ext_resource type="Resource" path="res://recipes/tropical_shock.tres" id="2"]
+[ext_resource type="Script" path="res://machines/mixer_view.gd" id="3"]
+[sub_resource type="BoxShape3D" id="BodyShape"]
+size = Vector3(2.1, 2.4, 1.5)
+[sub_resource type="StandardMaterial3D" id="TrayMaterial"]
+albedo_color = Color(0.91, 0.64, 0.29, 1)
+[sub_resource type="BoxMesh" id="TrayMesh"]
+size = Vector3(1.15, 0.12, 1.15)
+material = SubResource("TrayMaterial")
+[sub_resource type="BoxShape3D" id="TrayShape"]
+size = Vector3(1.15, 0.12, 1.15)
+[sub_resource type="StandardMaterial3D" id="StandMaterial"]
+albedo_color = Color(0.1, 0.24, 0.28, 1)
+[sub_resource type="BoxMesh" id="StandMesh"]
+size = Vector3(0.15, 0.7, 0.85)
+material = SubResource("StandMaterial")
+[sub_resource type="BoxShape3D" id="StandShape"]
+size = Vector3(0.15, 0.7, 0.85)
+[node name="MixerMachine" type="StaticBody3D"]
+collision_layer = 9
+script = ExtResource("1")
+recipe = ExtResource("2")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 1.2, 0)
+shape = SubResource("BodyShape")
+[node name="Output" type="Marker3D" parent="."]
+position = Vector3(1.85, 1.2, 0.3)
+[node name="View" type="Node3D" parent="."]
+script = ExtResource("3")
+[node name="OutputTray" type="StaticBody3D" parent="."]
+position = Vector3(1.85, 0.73, 0.3)
+[node name="Mesh" type="MeshInstance3D" parent="OutputTray"]
+mesh = SubResource("TrayMesh")
+[node name="Collision" type="CollisionShape3D" parent="OutputTray"]
+shape = SubResource("TrayShape")
+[node name="OutputStand" type="StaticBody3D" parent="."]
+position = Vector3(1.85, 0.35, 0.3)
+[node name="Mesh" type="MeshInstance3D" parent="OutputStand"]
+mesh = SubResource("StandMesh")
+[node name="Collision" type="CollisionShape3D" parent="OutputStand"]
+shape = SubResource("StandShape")

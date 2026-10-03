@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RecipeData" load_steps=6 format=3]
+[ext_resource type="Script" path="res://recipes/recipe_data.gd" id="1"]
+[ext_resource type="Resource" path="res://ingredients/water.tres" id="2"]
+[ext_resource type="Resource" path="res://ingredients/caffeine.tres" id="3"]
+[ext_resource type="Resource" path="res://ingredients/mango.tres" id="4"]
+[ext_resource type="Script" path="res://ingredients/ingredient_data.gd" id="5"]
+[resource]
+script = ExtResource("1")
+id = &"tropical_shock"
+display_name = "TROPICAL SHOCK"
+ingredients = Array[ExtResource("5")]([ExtResource("2"), ExtResource("3"), ExtResource("4")])
+units = Array[int]([1, 1, 1])
+mix_seconds = 5.0
+servings = 6
+color = Color(1, 0.67, 0.14, 1)

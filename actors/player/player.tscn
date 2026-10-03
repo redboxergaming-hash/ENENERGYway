@@ -1,0 +1,41 @@
+[gd_scene load_steps=7 format=3]
+[ext_resource type="Script" path="res://actors/player/player.gd" id="1"]
+[ext_resource type="Script" path="res://actors/player/player_input.gd" id="2"]
+[ext_resource type="Script" path="res://actors/player/physics_grabber.gd" id="3"]
+[ext_resource type="Script" path="res://actors/player/player_interaction.gd" id="4"]
+[ext_resource type="Script" path="res://actors/player/worker_visual.gd" id="5"]
+[sub_resource type="CapsuleShape3D" id="PlayerShape"]
+radius = 0.33
+height = 1.8
+[node name="Player" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 7
+floor_snap_length = 0.25
+script = ExtResource("1")
+[node name="Collider" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.9, 0)
+shape = SubResource("PlayerShape")
+[node name="PlayerInput" type="Node" parent="."]
+script = ExtResource("2")
+[node name="PhysicsGrabber" type="Node" parent="."]
+script = ExtResource("3")
+[node name="PlayerInteraction" type="Node" parent="."]
+script = ExtResource("4")
+[node name="WorkerVisual" type="Node3D" parent="."]
+script = ExtResource("5")
+[node name="Chest" type="Marker3D" parent="."]
+position = Vector3(0, 1.2, 0)
+[node name="CameraPivot" type="Node3D" parent="."]
+position = Vector3(0, 1.5, 0)
+rotation = Vector3(-0.15, 0, 0)
+[node name="HandAnchor" type="Marker3D" parent="CameraPivot"]
+position = Vector3(0.65, -0.15, -1.4)
+[node name="SpringArm3D" type="SpringArm3D" parent="CameraPivot"]
+position = Vector3(0.65, 0, 0)
+spring_length = 3.8
+margin = 0.2
+collision_mask = 1
+[node name="Camera3D" type="Camera3D" parent="CameraPivot/SpringArm3D"]
+current = true
+fov = 78.0
+near = 0.1
