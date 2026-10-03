@@ -1,74 +1,69 @@
-# ENERGY INC. — architecture
+# ENERGY INC. — architecture, version 0.2.0
 
-## Scope and engine
+## Runtime and scope
 
-Milestone 01 is a single-player **mixing training room**, built in Godot 4.x with typed GDScript, tested on **4.6.3**. Compatibility rendering supports modest PC hardware and requires no plugins, imported models, network services, or external assets. Open `project.godot` and press F5.
+Godot **4.6.3**, typed GDScript and Compatibility rendering. There are no runtime plugins or external services. Version 0.2 completes one single-player production loop: ingredient → mixer → physical six-serving batch → filler + empty cans → six physical filled cans → delivery → reward/new order. Sealing, labeling and packaging remain folded into the filler for this slice.
 
-This milestone deliberately ends at a physical Tropical Shock batch. Filling, cans, delivery, order deadlines, and money are Milestone 02. Training materials replenish after collecting a batch; this is tutorial supply behavior, not an implemented factory economy.
-
-## Ownership and responsibilities
+## Composition and state ownership
 
 ```text
-GameSession (scene composition, supply lifecycle, pause/restart)
-├── FactoryRoom (graybox geometry, environment, lighting)
+GameSession (composition, material replenishment, pause/restart)
+├── FactoryRoom / FactoryLighting (room, original art, static collision)
 ├── FactoryPlayer : CharacterBody3D
-│   ├── PlayerInput (device-scoped actions → commands)
-│   ├── PhysicsGrabber (exclusive claim, dynamic hold, release/throw)
-│   ├── PlayerInteraction (camera ray + reach → machine/item commands)
-│   ├── CameraPivot / SpringArm3D / Camera3D
-│   └── WorkerVisual (placeholder worker and walking animation)
-├── MixerMachine : MachineBase : StaticBody3D
-│   ├── RecipeData → IngredientData resources
-│   ├── output marker → CarryableItem(batch_recipe)
-│   └── MixerView (signal-driven display and visual wobble)
-├── CarryableItem : RigidBody3D (ingredient OR batch identity)
-└── FactoryHUD (observes state, emits resume/restart intent)
+│   ├── PlayerInput (per-device actions)
+│   ├── PlayerInteraction (visible/reachable target → commands)
+│   ├── PhysicsGrabber (exclusive ownership, dynamic carry/drop/throw)
+│   └── WorkerVisual (GLB mesh parts animated independently of collision)
+├── MixerMachine : MachineBase (resource recipe, input quantities, one batch slot)
+├── CanFiller : MachineBase (reservoir, queued empties, six output slots)
+├── CanSupply : MachineBase (empty-can dispenser)
+├── DeliveryStation : MachineBase (delivery command adapter)
+├── OrderManager (deadline, delivered count, settlement, balance)
+├── CarryableItem : RigidBody3D → ItemView
+├── FactoryHUD / HudLayout / OrderBoard (read-only state presentation)
+└── FactoryAudio (original synthesized feedback; signal observer)
 ```
 
-- `systems/input_bindings.gd` is the only autoload. It registers baseline keyboard, mouse, and standardized gamepad actions. It holds no gameplay state.
-- `PlayerInput` clones actions into `p{player_id}_...`, assigns gamepad device IDs and optionally keyboard/mouse. This prevents every future local player responding to every controller. Only player one and one viewport are currently instantiated.
-- `FactoryPlayer` owns locomotion, gravity, jump buffering/coyote time, and capped object shoves. Input, grabbing, interaction, and visuals are separate components.
-- `MachineBase` owns the state enum, elapsed processing time, and state/progress/content/feedback signals. It exposes `interact`, `try_start`, and `interaction_text`; the player depends on this common interface, not on mixer internals.
-- `MixerMachine` validates quantities, consumes accepted items, starts processing only with the exact recipe, and emits a single physical output. Wrong or duplicate inputs do not consume an item. Repeated start cannot duplicate production. The output slot remains occupied until the batch is claimed.
-- `RecipeData` and `IngredientData` are immutable shared `.tres` definitions. Runtime quantities live in `MixerMachine.contents`; item ownership lives on the body. Never mutate shared resources to represent one machine or one can.
-- The HUD observes game state and signals. HUD labels are never the source of truth. Environment labels and worker/machine animation do not drive simulation.
+`InputBindings` is the only autoload. It registers standardized base input actions, not game state. `PlayerInput` clones scoped actions (`p1_…`) for a chosen gamepad and optional keyboard/mouse, removing them on teardown. Single-player mouse capture and global pause remain session responsibilities.
 
-## Machine lifecycle
+`MachineBase` owns elapsed processing time and `IDLE`, `LOADING`, `PROCESSING`, `FINISHED`, `BROKEN`, `OVERHEATED` states. All stations expose `interact`, `try_start` and `interaction_text`; player code does not branch by individual machine type. State, progress, inventory and feedback signals connect presentation. Temperature, damage, power and jams remain inactive extension fields.
 
-```text
-IDLE → LOADING → PROCESSING (5s) → FINISHED → IDLE
-         ↑          exact recipe      │       ↑
-  accepted inputs                physical output
-                                 claimed by player
-```
+## Data and production invariants
 
-`BROKEN` and `OVERHEATED`, plus power usage, temperature, damage, slot counts and jam probability, are explicit extension points. Breakdowns, power simulation, overheating, generic slot inventories and random jams are **not active** in this milestone. Ingredient instability/stickiness are data hooks only. The training mixer rejects extra caffeine instead of silently starting a chaos simulation.
+- `IngredientData`, `RecipeData`, `ItemDefinition` and `OrderData` are shared immutable `.tres` configuration.
+- `ItemDefinition.Kind` distinguishes ingredient, batch, empty can and filled can. It stores mass, collider dimensions and mesh scene. `IngredientData` supplies each ingredient's model. Runtime product identity and remaining batch servings live on physical item instances.
+- `ItemCatalog` names resource archetypes. `CarryableItem` owns physics and claims; `ItemView` constructs only its appearance.
+- Mixer quantities must exactly match the recipe. Accepted input is consumed once. Processing lasts five seconds. One batch with six servings is emitted; another cycle is blocked until that output is claimed.
+- Filler accepts one six-serving batch when its reservoir is empty. Raw ingredients and extra batches are rejected without consuming them. Up to six empty cans can queue. Starting requires liquid, an empty can and room in the output tray.
+- Every one-second fill creates one physical can, deducts one empty and one serving, and continues through the queue. Each output records a tray slot; claiming it frees that slot. A full tray blocks another start. Reservoir counters never mutate `RecipeData`.
+- Delivery accepts only a held, unconsumed filled can matching the active order's product ID. Acceptance consumes the body, increments once and settles after six. A settled order cannot pay or charge again.
+- Orders use 180 simulation seconds, a $420 reward and $100 timeout penalty. Settlement starts a three-second intermission, then a new order. Money may be negative after penalties. State is session-only; no save/progression system is implied.
+- Pause freezes physics, order timers, transitions and machine audio. Restart reloads the complete scene, clearing inventory, orders and balance. Visual UI remains responsive during pause.
 
-Signals include `state_changed`, `progress_changed`, `contents_changed`, `feedback`, `batch_created`, `batch_collected`, `held_changed`, `claimed`, and `released`.
+## Physics and targeting
 
-## Physics and interaction decisions
+60 Hz physics. Layers: 1 room, 2 workers, 3 items, 4 stations. Machines occupy room + station layers. Held objects remain dynamic rigid bodies, with gravity and holder collision temporarily disabled. A bounded velocity servo and wall ray steer toward the hand; release restores gravity/collision and adds a bounded throw impulse. Objects below the map recover at spawn. Locomotion uses a capsule, coyote time/jump buffering and capped object shoves.
 
-- 60 Hz physics; layers: 1 factory, 2 workers, 3 carryable objects, 4 interactable machines. Machines occupy factory + interaction layers.
-- The camera ray respects walls, excludes the worker/held item, and requires a hit within 3.4 meters of the worker's chest. Looking at a distant machine is insufficient.
-- Holding never reparents, freezes, or teleports a rigid body. A bounded velocity servo tracks a hand anchor; a chest-to-anchor wall ray retracts the target. Object dimensions, continuous collision detection, and solid colliders provide the remaining collision response.
-- Held items temporarily ignore their holder and gravity, retaining world/other-item collisions. Releasing restores gravity and holder collisions. Hold Q/B/Circle to charge a throw; a quick release drops gently.
-- Items can only have one holder. Mixer acceptance and consumption occur synchronously on the simulation thread. Items below the room recover at their spawn point; the worker recovers at spawn. Pause → Restart training is a complete reset.
-- This is controllable stylized physics, not ragdoll locomotion. Wall pressure, stacking and controller feel need human playtesting before tuning for multiplayer.
+The primary camera ray respects geometry and a 3.4 m chest-relative reach. Small-item assistance considers candidates within 28 screen pixels, validates range, and requires another unobstructed ray. It never selects through walls. A presentation-only hull outline marks the selected object. The same commands support keyboard and standardized gamepad controls.
 
-## Co-op migration boundaries
+## Art and presentation decisions
 
-Phase 1 is single-player. Phase 2 should introduce a local player/session registry, explicit join/leave, device assignment, per-player HUD and SubViewport split screen. Player-scoped input already exists; global pause and mouse capture are intentionally single-session concerns today.
+The original block-only milestone is replaced by a generated Blender mesh kit with bevels, weighted normals, rounded worker proportions, machine fittings, six distinct carryable models, delivery desk, dispenser and environmental props. `tools/build_art.py` explicitly converts palette sRGB values to linear material inputs. Committed GLBs mean Blender is optional for contributors and absent from the game runtime.
 
-Phase 3 should route pickup/load/start/drop commands through a host authority. Give players, items and machines stable network IDs; validate distance, state, ownership and capacity on the host. Replicate accepted state changes and snapshots, and interpolate item transforms on clients. Do not transmit keyboard events or attempt deterministic lockstep across rigid-body physics. Current direct node references and local synchronous claims are seams to replace, **not an implemented networking layer**. No RPCs or online promises are hidden in this slice.
+The procedural room still uses modular pieces and simple solid colliders. It has a warm/cool palette, floor markings, windows, ceiling/trusses, signs, an animated mixer, visible queued cans, contact shadows and directional lighting. Labels do not cast tiny physical shadows. Compatibility rendering plus MSAA keeps the Mac target broad; there is no claim of a measured shipping performance budget.
 
-Steam belongs behind a future platform-services adapter (session discovery, invites, achievements, presence, cloud saves). Production logic must remain runnable without Steam. No Steam API, SDK or account dependency is included.
+HUD layout is separate from runtime updates; neither it nor the world order board owns authoritative counters. Open Sans is bundled with its license. Original short synthesized sounds are committed WAVs. All generated and third-party asset provenance is documented in `THIRD_PARTY_NOTICES.md`.
 
-## Map and content authoring
+## Future co-op / platform boundaries
 
-`factory/factory.tscn` composes reusable player and mixer scenes. `FactoryRoom` and `Graybox` construct original primitive geometry at runtime, so open the main scene and **run** it to see the room; the editor preview intentionally shows only scene roots. Gameplay components are replaceable independently of their placeholder visuals. Replace procedural room dressing with authored scenes as map production begins.
+Only one player and viewport exist. Local co-op next needs a player registry, join/leave/device assignment, split-screen viewports and separate HUDs. Scoped input is groundwork, not a completed multiplayer feature.
 
-One enclosed room currently contains ingredient storage, mixing, a blocked future filling station, signs, and a small break bench. The rest of the factory districts belong to later milestones.
+Online play should route interaction commands through a host, introduce stable entity IDs, validate range/state/ownership/capacity server-side and replicate accepted state changes plus interpolated body snapshots. Current direct node references and synchronous transactions are migration seams. Do not attempt deterministic lockstep for these rigid bodies.
 
-## Validation
+Steam belongs behind a later platform-services adapter. There are no Steam APIs, matchmaking, saves or accounts in this build.
 
-See `README.md` for commands and `tests/README.md` for scope. Automated integration tests execute real scenes, physics ticks, device-scoped action commands, resource validation, mixer transactions, two production cycles, pause and recovery. Rendered smoke testing captures the real viewport; headless testing cannot establish visual correctness or controller feel.
+## Mac distribution
+
+The committed export preset creates `downloads/ENERGY-INC-macOS.zip`, containing an executable universal `.app` for x86_64 and arm64. It uses Godot's built-in ad-hoc signer. Apple Developer ID and notarization are not configured; users may need the documented per-app macOS approval.
+
+`tools/verify_macos_export.py` verifies ZIP integrity, executable permission, both Mach-O slices, ad-hoc code-page hashes and resource hashes. The actual exported PCK is also launched on Linux. These checks do not replace native macOS execution, Gatekeeper validation, hardware controller testing or GPU profiling. The binary is deliberately stored in `downloads/` for this development delivery; move future release history to a release pipeline.

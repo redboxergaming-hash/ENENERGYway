@@ -17,6 +17,9 @@ enum State { IDLE, LOADING, PROCESSING, FINISHED, BROKEN, OVERHEATED }
 var state: State = State.IDLE
 var elapsed: float = 0.0
 
+func _ready() -> void:
+	add_to_group("interactable")
+
 func _physics_process(delta: float) -> void:
 	if state != State.PROCESSING:
 		return

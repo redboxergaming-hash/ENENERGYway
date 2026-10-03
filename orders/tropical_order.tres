@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="OrderData" load_steps=3 format=3]
+[ext_resource type="Script" path="res://orders/order_data.gd" id="1"]
+[ext_resource type="Resource" path="res://recipes/tropical_shock.tres" id="2"]
+[resource]
+script = ExtResource("1")
+recipe = ExtResource("2")
+customer = "Gym Bro GmbH"
+quantity = 6
+deadline = 180.0
+reward = 420
+penalty = 100

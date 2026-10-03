@@ -1,60 +1,45 @@
-# ENERGY INC. — delivery roadmap
+# ENERGY INC. — roadmap
 
-Every milestone must import, launch and remain playable. Extend existing components, run regression tests, and document architecture changes before advancing.
+Every milestone must remain runnable. Inspect and reuse existing systems, run regressions, verify the actual render and document state/ownership changes.
 
-## 01 — Foundation and mixing lab (implemented)
+## 01 — Mixing lab (complete)
 
-- Godot 4.x project, reusable scenes, recipe and ingredient Resources.
-- One original graybox room, one stylized worker, mouse/keyboard + gamepad mappings.
-- Camera-relative movement, jumping, collision, physical pickup, carrying, drop and charged throw.
-- Water, caffeine and mango; exact-recipe mixer, five-second processing, physical six-serving batch.
-- Training checklist, progress, contextual prompts, pause/restart, automatic material replenishment.
-- Integration suite and rendered viewport smoke test.
+Godot project, original room, one worker, scoped keyboard/gamepad inputs, physics pickup/carry/throw, ingredient/recipe Resources and five-second mixer. Original regression suite retained.
 
-Acceptance: collect all three ingredients, load/start mixer, take batch, repeat without restarting. See `tests/README.md` for verified coverage and hardware limitations.
+## 02 — Playable production shift and visual pass (complete, v0.2.0)
 
-## 02 — Complete the first production loop (next)
+- Original rounded Blender-generated 3D models, animated worker, remodeled mixer, filler, dispenser and delivery counter.
+- Factory art, lighting/camera pass, original icon, target outlines, small-item assistance, readable order/recipe HUD and world order display.
+- Physical batch transfer, empty-can supply, six-can filler with bounded inputs/outputs and quantity accounting.
+- Six-can order, 180-second deadline, atomic delivery, $420 reward / $100 timeout penalty, subsequent orders and money balance.
+- Original synthesized audio, pause/restart/fullscreen/quit.
+- Mac universal `.app` ZIP, export presets, structural signature checks and download instructions.
+- Automated complete production loop and failure-path tests.
 
-1. Introduce resource-backed item definitions / can state, then `CanFiller : MachineBase` using the existing interaction interface. Transfer the batch once; track six remaining servings without mutating the shared RecipeData.
-2. Add six physical empty cans and filler input/output handling. One empty can + one serving produces one Tropical Shock can. Explicitly prevent duplicate consumption and output blockage loss.
-3. Add resource-backed order specification and runtime order instance: Gym Bro GmbH, six Tropical Shock cans, 180 seconds, $420 reward, $100 timeout penalty.
-4. Add loading/delivery area. Count only matching filled cans, consume each delivered can exactly once, pay once when all six arrive, and generate the next order.
-5. Add authoritative deadline/economy state and factory display/HUD. Pause freezes the shift clock; restart restores starting money and materials. Define negative-balance handling before penalties ship.
-6. Supply enough resources for successive orders. Test wrong products, duplicate delivery, timeouts, cancellation, occupied outputs and repeated shifts.
+Acceptance exercised in simulation: mixer → batch → filler + six empties → six physical cans → delivery → money → new order. Mac packaging is verified; actual macOS/physical controller playtesting remains open.
 
-Acceptance: START → order → three ingredients → 5s mixing → batch transfer → six empty cans → six filled cans → delivery → reward → new order. A human can complete the whole loop using only a controller. This milestone is the first full vertical slice, not the full game.
+## 02.1 — Hardware and feel validation (next)
+
+- Launch the downloaded app on Apple Silicon and Intel Macs; check Gatekeeper and controllers.
+- Tune camera distance, can targeting, walking/jumping and grab stability from human feedback.
+- Profile representative integrated GPUs; confirm 16:9, 16:10 and ultrawide layouts.
+- Add volume/sensitivity/rebinding/accessibility settings and versioned preference storage.
+- Move downloadable binaries from development Git history to a repeatable release pipeline; add Apple Developer ID signing/notarization when credentials are available.
 
 ## 03 — Local co-op, 2–4 players
 
-- Player registry, join/leave, explicit device assignment, per-player cameras/HUD/split screen.
-- Host-local shared machine transactions and exclusive object claims; no global movement input.
-- Test disconnect/reconnect and two players grabbing/loading the same object.
-- Tune room circulation and handoff distances through actual co-op playtests.
+Player/session registry; explicit join/leave/device assignment; per-player cameras and HUD; split screen; shared pause policy. Test simultaneous claims, loading races, disconnect/reconnect and complete repeated shifts with four players. No networking until this loop is fun and reliable.
 
-Acceptance: four players can complete repeatable shifts without duplication, lost ownership or cross-controller input.
+## 04 — Production depth and recoverable chaos
 
-## 04 — Production depth and controlled chaos
+Separate CanSealer, LabelMachine and PackagingMachine; boxes, packing and more recipes. Turn ingredient properties into actual batch quality with explicit excess-input rules. Add a seeded event director, intensity limits and recovery tools: spills/slips, overheating, pressure, reversible conveyors, power failures and readable physical chains. Expand the original map gradually with warehouse/control/loading areas.
 
-- Modular `CanSealer`, `LabelMachine`, `PackagingMachine`; boxes and order packing.
-- Additional original resource recipes: Blue Panic, Nuclear Melon, Zero IQ Zero Sugar.
-- Expand ingredient properties to actual batch composition/quality; bounded excess input rules.
-- Event director with a seed and intensity budget: spills/slips, pressure, overheating, jams, power interruptions and reversible conveyors.
-- Chain reactions through physics and signals, with cooldowns, recovery tools and readability. Do not spawn arbitrary disasters before basic production remains fun under pressure.
-- Expand this factory with warehouse, loading bay and control room; environmental humor, sound and animation pass.
-
-Acceptance: disasters create recoverable, legible co-op decisions; players can explain why an incident occurred.
+Acceptance: players can understand causes and recover; production stays enjoyable under pressure.
 
 ## 05 — Online co-op
 
-- Host-authoritative command validation, network IDs, replication/interpolation, lobby/session abstraction.
-- Latency simulation; ownership races, disconnect policy and reconnect scope.
-- Verify whole shifts under realistic latency/packet loss before integrating platform matchmaking.
+Host-authoritative commands, stable IDs, replication/interpolation, ownership conflict handling and session abstraction. Test latency, packet loss, host departure and reconnect policy across whole shifts before integrating Steam.
 
-## 06 — Progression and Steam readiness
+## 06 — Progression and Steam release preparation
 
-- Shift economy, machine upgrades, versioned saves, accessibility and rebinding/settings UI.
-- Cosmetic-only unlocks, original hats/outfits, character animation and UI/audio polish.
-- Steam adapter: matchmaking/invites, achievements, presence, cloud save policy.
-- Export presets and release build pipeline, Steam Deck/controller hardware matrix, performance budgets, localization, credits/licenses, QA and store deliverables.
-
-Release scope and schedule should be estimated after the complete single-player loop and local co-op playtests establish production cost and fun. No release date is implied by this roadmap.
+Versioned saves, upgrades, cosmetic-only unlocks, achievements/presence/cloud save policy, Steam matchmaking/invites, polished animation/audio, localization, accessibility, QA and performance budgets. Estimate release scope after full local co-op playtests; no release date is implied.

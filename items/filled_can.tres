@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ItemDefinition" load_steps=3 format=3]
+[ext_resource type="Script" path="res://items/item_definition.gd" id="1"]
+[ext_resource type="PackedScene" path="res://art/models/filled_can.glb" id="2"]
+[resource]
+script = ExtResource("1")
+id = &"filled_can"
+display_name = "FILLED CAN"
+kind = 3
+mass = 0.5
+collider_size = Vector3(0.3, 0.48, 0.3)
+cylindrical = true
+visual = ExtResource("2")

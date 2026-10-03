@@ -51,7 +51,12 @@ static func label(parent: Node3D, value: String, at: Vector3, size: int = 36,
 	result.font_size = size * 3
 	result.pixel_size = 0.007 / 3.0
 	result.modulate = color
-	result.outline_size = 8
+	result.no_depth_test = false
+	result.shaded = false
+	result.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	result.font = preload("res://art/fonts/OpenSans-Bold.ttf")
+	result.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+	result.outline_size = 0
 	parent.add_child(result)
 	result.position = at
 	return result

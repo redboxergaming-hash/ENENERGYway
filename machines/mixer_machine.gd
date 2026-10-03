@@ -10,6 +10,7 @@ var output_item: CarryableItem
 @onready var output: Marker3D = $Output
 
 func _ready() -> void:
+	super._ready()
 	assert(recipe != null and recipe.is_valid(), "Mixer needs a valid recipe resource.")
 	processing_time = recipe.mix_seconds
 
@@ -49,7 +50,9 @@ func _finish_processing() -> void:
 	if output_item != null:
 		return
 	output_item = ITEM_SCENE.instantiate() as CarryableItem
+	output_item.definition = ItemCatalog.BATCH
 	output_item.batch_recipe = recipe
+	output_item.servings = recipe.servings
 	get_parent().add_child(output_item)
 	output_item.global_position = output.global_position
 	output_item.spawn_position = output.global_position

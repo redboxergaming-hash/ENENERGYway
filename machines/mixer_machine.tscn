@@ -33,11 +33,13 @@ script = ExtResource("3")
 position = Vector3(1.85, 0.73, 0.3)
 [node name="Mesh" type="MeshInstance3D" parent="OutputTray"]
 mesh = SubResource("TrayMesh")
+visible = false
 [node name="Collision" type="CollisionShape3D" parent="OutputTray"]
 shape = SubResource("TrayShape")
 [node name="OutputStand" type="StaticBody3D" parent="."]
 position = Vector3(1.85, 0.35, 0.3)
 [node name="Mesh" type="MeshInstance3D" parent="OutputStand"]
 mesh = SubResource("StandMesh")
+visible = false
 [node name="Collision" type="CollisionShape3D" parent="OutputStand"]
 shape = SubResource("StandShape")

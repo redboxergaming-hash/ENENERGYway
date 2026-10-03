@@ -44,7 +44,12 @@ func _physics_process(delta: float) -> void:
 		velocity.y -= 18.0 * delta
 	move_and_slide()
 	_push_objects()
-	body_visual.rotation.y = lerp_angle(body_visual.rotation.y, pivot.rotation.y, delta * 12.0)
+	var facing := body_visual.rotation.y
+	if is_instance_valid(grabber.held_item):
+		facing = pivot.rotation.y
+	elif direction.length_squared() > 0.01:
+		facing = atan2(-direction.x, -direction.z)
+	body_visual.rotation.y = lerp_angle(body_visual.rotation.y, facing, delta * 12.0)
 	if input_source.pressed(&"interact"):
 		interaction.interact()
 	if input_source.pressed(&"use"):

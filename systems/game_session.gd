@@ -4,6 +4,8 @@ const ITEM_SCENE := preload("res://items/carryable_item.tscn")
 const HUD_SCRIPT := preload("res://ui/factory_hud.gd")
 @onready var player: FactoryPlayer = $Player
 @onready var mixer: MixerMachine = $Mixer
+@onready var filler: CanFiller = $Filler
+@onready var orders: OrderManager = $Orders
 var hud: FactoryHUD
 var supplies: Array[CarryableItem] = []
 
@@ -13,13 +15,29 @@ func _ready() -> void:
 	for child in get_children():
 		child.process_mode = Node.PROCESS_MODE_PAUSABLE
 	_spawn_supplies()
+	$Delivery.orders = orders
 	hud = HUD_SCRIPT.new() as FactoryHUD
 	hud.player = player
 	hud.mixer = mixer
+	hud.filler = filler
+	hud.orders = orders
 	add_child(hud)
 	hud.resume_requested.connect(func(): set_paused(false))
 	hud.restart_requested.connect(restart)
 	mixer.batch_collected.connect(_spawn_supplies)
+	$Delivery.feedback.connect(hud.show_message)
+	$CanSupply.feedback.connect(hud.show_message)
+	var audio := Node.new()
+	audio.set_script(preload("res://audio/factory_audio.gd"))
+	audio.process_mode = Node.PROCESS_MODE_PAUSABLE
+	add_child(audio)
+	var board := Node3D.new()
+	board.set_script(preload("res://ui/order_board.gd"))
+	board.orders = orders
+	board.position = Vector3(8.63, 1.57, 3.6)
+	board.rotation.y = -PI / 2.0
+	board.process_mode = Node.PROCESS_MODE_PAUSABLE
+	add_child(board)
 
 func _spawn_supplies() -> void:
 	# Replenish only consumed bottles; no duplicates if the signal is repeated.

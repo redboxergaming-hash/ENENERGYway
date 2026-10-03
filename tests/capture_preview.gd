@@ -10,6 +10,6 @@ func _capture() -> void:
 	await create_timer(1.5).timeout
 	await RenderingServer.frame_post_draw
 	var image := root.get_texture().get_image()
-	var error := image.save_png("res://docs/milestone-01.png")
+	var error := image.save_png("res://docs/milestone-02.png")
 	print("PREVIEW_CAPTURE: ", error_string(error))
 	quit(error)

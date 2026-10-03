@@ -1,20 +1,21 @@
-# Verification notes
+# Verification — v0.2.0
 
-Validation run on 2026-10-03: Godot 4.6.3 on Linux; **69 checks passed, zero failures**. Clean editor import, integration suite and main-scene startup completed without script or engine errors. The rendered smoke test also completed successfully; only the virtual graphics driver reported unsupported VSync. Run the commands in the root README after importing the project.
+Run `./tests/run_checks.sh` after installing Godot 4.6.3. It imports the project, runs both suites and starts the main scene, failing on engine/script errors as well as failed assertions.
 
-`run_tests.gd` instantiates the actual factory scene and runs the physics engine. It covers resource identity/quantities, floor collision, movement/jump input, camera-ray selection, physical pickup/ownership and following, loading/consumption, duplicate rejection, the five-second processing boundary, double-start protection, pause, output-slot blocking, batch pickup/reset, supply replenishment, throw/gravity, out-of-bounds recovery, a second production cycle, device-specific input mappings/teardown, HUD placement, pause-menu focus, and actual scene restart.
+- `run_tests.gd`: **69 checks** covering the original mixing loop, movement/jump/floor collision, real camera rays and player actions, dynamic holding, exclusive claims, duplicate ingredient rejection, timing, pause, output blocking/reset, replenishment, throwing/recovery, two batches, scoped gamepad mappings and scene restart.
+- `production_tests.gd`: **83 checks** for the complete six-can order: real batch transfer and player interaction with dispenser/filler/delivery, input rejection, six-output accounting, tray stability and selectable outputs, repeated-start protection, deadline freeze on pause, correct product validation, exactly-once reward, next-order reset, exactly-once timeout penalty and restart cleanup. A watchdog prevents silent script failures from hanging the suite.
+- `capture_preview.gd`: captures the actual rendered game to `docs/milestone-02.png`. A local Xorg display and Mesa llvmpipe were used. The virtual driver reports unsupported VSync; this is not a game script error.
+- `tools/verify_macos_export.py`: checks ZIP CRCs, executable bits, universal Mach-O x86_64/arm64 slices, ad-hoc code-page hashes and signed bundle resource hashes. Also extracts the shipped PCK to `/tmp/energy-macos.pck` for an independent startup check.
 
-The first cycle uses player-scoped action presses and real interaction rays. The second cycle exercises machine transaction commands directly; it does not claim to simulate player navigation. No external test framework is needed.
+The Mac application's exported PCK is launched under Godot 4.6.3 on Linux. The native Mach-O executable **cannot be run on this Linux environment**. There is no claim that native macOS startup, Gatekeeper, physical Xbox/PlayStation controllers or shipping GPU performance were tested.
 
-`capture_preview.gd` starts the real scene on a graphical display and captures the viewport after rendering. The reference image was produced on an Xorg dummy display with Mesa llvmpipe. This verifies rendering and layout, not a target-PC performance budget. A virtual-driver VSync warning is expected in this setup.
+The suites exercise real physics and commands, but reposition the actor to focus on interactions instead of pretending to be human navigation tests. Only human playtesting can judge game feel and co-op readability.
 
-Still requires manual validation: physical Xbox / PlayStation controllers, hot-unplug hardware behavior, rumble (not implemented), unusual aspect ratios, sustained play feel, shipping GPU performance, and accessibility/rebinding options. Local split screen and online multiplayer do not exist yet.
+Manual release checklist:
 
-Manual smoke path:
-
-1. Launch, move/look/jump, approach ingredient bench, aim/grab each ingredient.
-2. Test gentle drop and charged throw against floor and walls; recover the object.
-3. Load all three into the mixer. Try starting early and submitting a duplicate.
-4. Start, pause midway, resume, take output after five simulation seconds.
-5. Verify supply replenishes and a second batch works.
-6. Open pause with Esc/Start, use menu focus to restart, and verify clean initial state.
+1. Download the Mac ZIP, unpack, approve the individual app if requested, launch without Godot installed.
+2. Walk, orbit camera, jump, grab/drop/throw, bump into carried items and walls.
+3. Complete water/caffeine/mango → mix → batch transfer → six empties → fill → six deliveries.
+4. Verify $420 and the next order; allow another order to time out once.
+5. Pause during processing, resume, toggle fullscreen, restart and quit.
+6. Repeat using only each supported controller; verify UI prompts, menu focus and reconnect behavior.

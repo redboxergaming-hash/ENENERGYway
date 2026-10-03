@@ -1,0 +1,26 @@
+[gd_scene load_steps=6 format=3]
+[ext_resource type="Script" path="res://machines/can_filler.gd" id="1"]
+[ext_resource type="Script" path="res://machines/filler_view.gd" id="2"]
+[sub_resource type="BoxShape3D" id="Body"]
+size = Vector3(2.35, 1.85, 1.55)
+[sub_resource type="BoxShape3D" id="Tray"]
+size = Vector3(0.62, 0.12, 1.6)
+[sub_resource type="BoxShape3D" id="Stand"]
+size = Vector3(0.15, 0.7, 1.1)
+[node name="Filler" type="StaticBody3D"]
+collision_layer = 9
+script = ExtResource("1")
+[node name="Collision" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.95, -0.1)
+shape = SubResource("Body")
+[node name="Output" type="Marker3D" parent="."]
+position = Vector3(-1.45, 1.1, 0.35)
+[node name="View" type="Node3D" parent="."]
+script = ExtResource("2")
+[node name="OutputTray" type="StaticBody3D" parent="."]
+position = Vector3(-1.45, 0.76, 0.35)
+[node name="Collision" type="CollisionShape3D" parent="OutputTray"]
+shape = SubResource("Tray")
+[node name="Stand" type="CollisionShape3D" parent="OutputTray"]
+position = Vector3(0, -0.41, 0)
+shape = SubResource("Stand")

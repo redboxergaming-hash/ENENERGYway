@@ -18,4 +18,5 @@ run_check() {
 }
 run_check import godot --headless --editor --path . --quit
 run_check integration godot --headless --path . --script tests/run_tests.gd
+run_check production godot --headless --path . --script tests/production_tests.gd
 run_check startup godot --headless --path . --quit-after 180

@@ -1,25 +1,34 @@
 extends Node3D
+const MODEL := preload("res://art/models/worker.glb")
 var phase: float = 0.0
-var left_foot: MeshInstance3D
-var right_foot: MeshInstance3D
+var left_leg: Node3D
+var right_leg: Node3D
+var left_arm: Node3D
+var right_arm: Node3D
+var head: Node3D
+var torso: Node3D
 
 func _ready() -> void:
-	Graybox.box(self, Vector3(0.63, 0.66, 0.36), Vector3(0, 0.95, 0), Color("e8a442"))
-	Graybox.box(self, Vector3(0.45, 0.17, 0.38), Vector3(0, 0.63, 0), Color("193a4c"))
-	Graybox.box(self, Vector3(0.43, 0.4, 0.4), Vector3(0, 1.5, 0), Color("d6a880"))
-	Graybox.box(self, Vector3(0.52, 0.14, 0.55), Vector3(0, 1.74, 0), Color("f7dc72"))
-	Graybox.cylinder(self, 0.28, 0.15, Vector3(0, 1.83, 0.02), Color("f7dc72"))
-	Graybox.box(self, Vector3(0.37, 0.12, 0.03), Vector3(0, 1.53, -0.21), Color("233d49"))
-	for side: float in [-1.0, 1.0]:
-		Graybox.box(self, Vector3(0.18, 0.45, 0.2), Vector3(side * 0.42, 0.99, -0.06), Color("e8a442"))
-		Graybox.box(self, Vector3(0.19, 0.2, 0.23), Vector3(side * 0.42, 0.72, -0.1), Color("213b4b"))
-	left_foot = Graybox.box(self, Vector3(0.22, 0.5, 0.29), Vector3(-0.17, 0.28, -0.04), Color("253f50"))
-	right_foot = Graybox.box(self, Vector3(0.22, 0.5, 0.29), Vector3(0.17, 0.28, -0.04), Color("253f50"))
+	var model := MODEL.instantiate() as Node3D
+	add_child(model)
+	left_leg = model.find_child("LeftLeg", true, false)
+	right_leg = model.find_child("RightLeg", true, false)
+	left_arm = model.find_child("LeftArm", true, false)
+	right_arm = model.find_child("RightArm", true, false)
+	head = model.find_child("Head", true, false)
+	torso = model.find_child("Torso", true, false)
 
 func _process(delta: float) -> void:
-	var worker := get_parent() as CharacterBody3D
+	var worker := get_parent() as FactoryPlayer
 	var speed := Vector2(worker.velocity.x, worker.velocity.z).length()
-	phase += delta * speed * 2.4
+	phase += delta * (speed * 2.5 + 0.8)
 	var amplitude := minf(speed / 5.0, 1.0)
-	left_foot.rotation.x = sin(phase) * 0.4 * amplitude
-	right_foot.rotation.x = -sin(phase) * 0.4 * amplitude
+	left_leg.rotation.x = sin(phase) * 0.55 * amplitude
+	right_leg.rotation.x = -sin(phase) * 0.55 * amplitude
+	var carrying := is_instance_valid(worker.grabber.held_item)
+	var arm_angle := 1.1 if carrying else -sin(phase) * 0.36 * amplitude
+	left_arm.rotation.x = lerpf(left_arm.rotation.x, arm_angle, delta * 12.0)
+	right_arm.rotation.x = lerpf(right_arm.rotation.x, 1.1 if carrying else -arm_angle, delta * 12.0)
+	torso.rotation.z = sin(phase) * 0.045 * amplitude
+	head.rotation.z = sin(phase * 0.5) * 0.025
+	position.y = absf(sin(phase)) * 0.04 * amplitude

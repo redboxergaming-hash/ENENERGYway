@@ -1,5 +1,6 @@
-[gd_resource type="Resource" script_class="IngredientData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="IngredientData" load_steps=3 format=3]
 [ext_resource type="Script" path="res://ingredients/ingredient_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://art/models/caffeine.glb" id="2"]
 [resource]
 script = ExtResource("1")
 id = &"caffeine"
@@ -8,3 +9,4 @@ color = Color(0.77, 0.94, 0.27, 1)
 warning = "DO NOT DRINK INDUSTRIAL CAFFEINE"
 mass = 0.7
 instability = 1.0
+visual = ExtResource("2")
